@@ -1,0 +1,30 @@
+<article class="product-card">
+  <a class="product-card__link" href="/product/{{ product.slug }}/">
+    <div class="product-card__media">
+      <img class="product-card__img" src="{{ product.image_url or '/assets/img/no-photo.png' }}" alt="{{ product.name }}" loading="lazy" />
+    </div>
+    <div class="product-card__body">
+      <h3 class="product-card__title">{{ product.name }}</h3>
+  {% if product.spec %}
+    {% if product.spec.items is defined %}
+      <div class="product-card__spec">{{ product.spec.get('gost') or product.spec.get('size') or '' }}</div>
+    {% elif product.spec|length > 0 %}
+      <div class="product-card__spec">{{ (product.spec[0].value or product.spec[0].val or '') }}</div>
+    {% endif %}
+  {% endif %}
+      <div class="product-card__meta">
+        {% if product.price %}
+          <div class="product-card__price">От {{ '%.0f'|format(product.price) }} ₽</div>
+        {% else %}
+          <div class="product-card__price">По запросу</div>
+        {% endif %}
+        <div class="product-card__stock {{ 'in' if product.in_stock else 'out' }}">
+          {{ 'В наличии' if product.in_stock else 'Нет в наличии' }}
+        </div>
+      </div>
+      <span class="product-card__cta">Подробнее</span>
+    </div>
+  </a>
+</article>
+
+

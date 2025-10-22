@@ -1,0 +1,142 @@
+{% set modal_id = modal_id or 'quoteModal' %}
+{% set form_id = form_id or 'modalLeadForm' %}
+{% set msg_id = msg_id or 'modalFormMsg' %}
+{% set success_id = success_id or 'modalSuccess' %}
+{% set modal_title = modal_title or 'Запросить счёт' %}
+{% set product_name = product_name or '' %}
+
+<div class="modal" id="{{ modal_id }}" aria-hidden="true" role="dialog" aria-modal="false">
+  <div class="modal__overlay" data-close-modal></div>
+  <div class="modal__dialog" role="document">
+    <button class="modal__close" type="button" aria-label="Закрыть" data-close-modal>×</button>
+    <div class="modal__content">
+      <h2 class="modal__title">{{ modal_title or 'Запросить счёт' }}</h2>
+      <form id="{{ form_id }}" class="lead-form__form" method="post" action="/api/lead" enctype="multipart/form-data">
+        <div class="form-group">
+          <input class="form-input" type="text" name="name" placeholder="Ваше имя" />
+        </div>
+        <div class="form-group">
+          <input class="form-input" type="tel" name="phone" placeholder="Телефон*" required />
+        </div>
+        <div class="form-group">
+          <input class="form-input" type="email" name="email" placeholder="Email" />
+        </div>
+        <div class="form-group">
+          <textarea class="form-textarea" name="message" placeholder="Комментарий" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="file-upload">
+            <input class="file-upload__input" type="file" name="document" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" />
+            <span class="file-upload__label">
+              <i data-lucide="paperclip" class="file-upload__icon" width="20" height="20" aria-hidden="true"></i>
+              <span class="file-upload__text">Прикрепить документ</span>
+            </span>
+          </label>
+        </div>
+        <input type="text" name="hp_field" class="form-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        <button class="btn btn_primary btn_full" type="submit">Отправить заявку</button>
+        <p id="{{ msg_id }}" class="form-msg" role="status" aria-live="polite"></p>
+        <p class="form-note">Нажимая на кнопку, вы соглашаетесь на <a href="/privacy/">обработку персональных данных</a></p>
+      </form>
+    </div>
+    <div class="modal__success" id="{{ success_id }}">
+      <div class="modal__success-icon">✓</div>
+      <h3 class="modal__success-title">Заявка отправлена!</h3>
+      <p class="modal__success-text">Менеджер свяжется с вами в ближайшее время</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    const modal = document.getElementById('{{ modal_id }}');
+    const modalForm = document.getElementById('{{ form_id }}');
+    const modalMsg = document.getElementById('{{ msg_id }}');
+    const modalContent = modal ? modal.querySelector('.modal__content') : null;
+    const modalSuccess = modal ? modal.querySelector('.modal__success') : null;
+    const closeEls = modal ? modal.querySelectorAll('[data-close-modal]') : [];
+    const body = document.body;
+
+    function openModal(){
+      if(!modal) return;
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+      modal.setAttribute('aria-modal', 'true');
+      body.classList.add('modal-open');
+    }
+
+    function closeModal(){
+      if(!modal) return;
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+      modal.setAttribute('aria-modal', 'false');
+      body.classList.remove('modal-open');
+    }
+
+    // Экспорт функций для глобального использования
+    window.openQuoteModal = function(productName) {
+      // Обновляем заголовок и скрытое поле если передан товар
+      if (productName) {
+        const titleEl = modal ? modal.querySelector('.modal__title') : null;
+        const productInput = modal ? modal.querySelector('input[name="product"]') : null;
+        
+        if (titleEl) {
+          titleEl.textContent = '{{ modal_title or "Запросить счёт" }} на ' + productName;
+        }
+        if (productInput) {
+          productInput.value = productName;
+        } else if (modalForm) {
+          // Создаем скрытое поле если его нет
+          const hiddenInput = document.createElement('input');
+          hiddenInput.type = 'hidden';
+          hiddenInput.name = 'product';
+          hiddenInput.value = productName;
+          modalForm.appendChild(hiddenInput);
+        }
+      } else {
+        // Сбрасываем заголовок для общих случаев
+        const titleEl = modal ? modal.querySelector('.modal__title') : null;
+        if (titleEl) {
+          titleEl.textContent = '{{ modal_title or "Запросить счёт" }}';
+        }
+      }
+      openModal();
+    };
+    window.closeQuoteModal = closeModal;
+
+    closeEls.forEach(function(el){ el.addEventListener('click', closeModal); });
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeModal(); });
+
+    // Отправка формы
+    if (modalForm) {
+      modalForm.addEventListener('submit', async function(e){
+        e.preventDefault();
+        if (modalMsg) modalMsg.textContent = 'Отправляем...';
+        const formData = new FormData(modalForm);
+        try {
+          const resp = await fetch(modalForm.action, { method: 'POST', body: formData });
+          const data = await resp.json().catch(() => ({}));
+          if (resp.ok) {
+            // Показываем экран успеха
+            if (modalContent) modalContent.style.display = 'none';
+            if (modalSuccess) modalSuccess.style.display = 'block';
+            modalForm.reset();
+            setTimeout(function(){ 
+              closeModal(); 
+              // Возвращаем к форме при следующем открытии
+              setTimeout(function(){
+                if (modalContent) modalContent.style.display = 'block';
+                if (modalSuccess) modalSuccess.style.display = 'none';
+                if (modalMsg) modalMsg.textContent = '';
+              }, 300);
+            }, 2500);
+          } else {
+            if (modalMsg) modalMsg.textContent = data.message || 'Ошибка отправки';
+          }
+        } catch (err) {
+          if (modalMsg) modalMsg.textContent = 'Сеть недоступна';
+        }
+      });
+    }
+  })();
+</script>

@@ -1,0 +1,19 @@
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <ol class="breadcrumbs__list">
+    {% for bc in breadcrumbs %}
+      <li class="breadcrumbs__item">
+        {% if bc.url and not loop.last %}
+          <a class="breadcrumbs__link" href="{{ bc.url }}">{{ bc.name }}</a>
+          <i class="breadcrumbs__separator" data-lucide="chevron-right" aria-hidden="true"></i>
+        {% else %}
+          <span class="breadcrumbs__current" aria-current="page">{{ bc.name }}</span>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ol>
+  {% if breadcrumbs_jsonld %}
+    <script type="application/ld+json">{{ breadcrumbs_jsonld | tojson }}</script>
+  {% endif %}
+</nav>
+
+

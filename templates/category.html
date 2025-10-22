@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block head_meta %}
+  <title>{{ meta.title or (category.h1 or category.name) ~ ' — ' ~ site.name }}</title>
+  {% if meta.description %}
+    <meta name="description" content="{{ meta.description }}" />
+  {% else %}
+    {% set intro = (category.intro_text or '')|trim %}
+    {% if intro %}
+      <meta name="description" content="{{ intro[:140] ~ (intro|length > 140 and '…' or '') }} Доставка по России. {{ site.name }}." />
+    {% else %}
+      <meta name="description" content="Купить {{ category.name }} по ГОСТ. В наличии на складе. Счет за 1 час. Доставка по России. {{ site.name }}." />
+    {% endif %}
+  {% endif %}
+  {% set _canonical = canonical_url or ('/catalog/' ~ category.slug ~ '/') %}
+  <link rel="canonical" href="{{ _canonical }}" />
+  {% if og %}
+    <meta property="og:title" content="{{ og.title }}" />
+    <meta property="og:description" content="{{ og.description }}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="{{ og.image }}" />
+    <meta property="og:url" content="{{ og.url }}" />
+  {% endif %}
+  {% if pagination %}
+    {% if pagination.prev_url %}<link rel="prev" href="{{ pagination.prev_url }}" />{% endif %}
+    {% if pagination.next_url %}<link rel="next" href="{{ pagination.next_url }}" />{% endif %}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <section class="page-hero">
+    <div class="container">
+      <h1 class="page-hero__title">{{ category.h1 or category.name }}</h1>
+      {% if category.intro_text %}
+        <p class="page-hero__subtitle">{{ category.intro_text }}</p>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="breadcrumbs-section">
+    <div class="container">
+      {% include 'partials/breadcrumbs.html' %}
+    </div>
+  </section>
+
+  {% if subcategories and subcategories|length > 0 %}
+    <section class="subcats">
+      <div class="container">
+        <div class="section__head">
+          <h2 class="section__title">Подкатегории</h2>
+        </div>
+        <div class="catalog__grid">
+          {% for c in subcategories %}
+            <article class="catalog__card">
+              <a class="catalog__card-link" href="/catalog/{{ c.slug }}/">
+                <div class="catalog__card-media">
+                  <img class="catalog__card-img" src="{{ c.image_url or '/assets/img/no-photo.png' }}" alt="{{ c.name }}" loading="lazy" />
+                </div>
+                <div class="catalog__card-body">
+                  <h3 class="catalog__card-title">{{ c.name }}</h3>
+                  {% if c.desc %}<p class="catalog__card-desc">{{ c.desc }}</p>{% endif %}
+                  <span class="catalog__card-cta">Открыть</span>
+                </div>
+              </a>
+            </article>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
+  {% if products and products|length > 0 and (not subcategories or subcategories|length == 0) %}
+    <section class="category-products">
+      <div class="container">
+        <div class="section__head">
+          <h2 class="section__title">Товары</h2>
+        </div>
+        <div class="products__grid">
+          {% for product in products %}
+            {% include 'partials/product_card.html' %}
+          {% endfor %}
+        </div>
+
+        {% if pagination %}
+          {% set base_url = '/catalog/' ~ category.slug ~ '/' %}
+          {% include 'partials/pagination.html' %}
+        {% endif %}
+      </div>
+    </section>
+  {% elif (not subcategories or subcategories|length == 0) and (not products or products|length == 0) %}
+    <section class="empty-state">
+      <div class="container">
+        <p>В этой категории пока нет товаров.</p>
+      </div>
+    </section>
+  {% endif %}
+
+  {% if jsonld %}
+    <script type="application/ld+json">{{ jsonld | tojson }}</script>
+  {% endif %}
+  {% if subcategories and subcategories|length > 0 %}
+    {% set items = [] %}
+    {% for c in subcategories %}
+      {% set _ = items.append({
+        '@type': 'ListItem',
+        'position': loop.index,
+        'url': '/catalog/' ~ c.slug ~ '/',
+        'name': c.name,
+        'image': c.image_url or '/assets/img/no-photo.png'
+      }) %}
+    {% endfor %}
+    {% set list = {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      'name': category.name,
+      'mainEntity': {
+        '@type': 'ItemList',
+        'itemListElement': items
+      }
+    } %}
+    <script type="application/ld+json">{{ list | tojson }}</script>
+  {% elif products and products|length > 0 %}
+    {% set items = [] %}
+    {% for p in products %}
+      {% set _ = items.append({
+        '@type': 'ListItem',
+        'position': loop.index,
+        'url': '/product/' ~ p.slug ~ '/',
+        'name': p.name,
+        'image': p.image_url or '/assets/img/no-photo.png'
+      }) %}
+    {% endfor %}
+    {% set list = {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      'name': category.name,
+      'mainEntity': {
+        '@type': 'ItemList',
+        'itemListElement': items
+      }
+    } %}
+    <script type="application/ld+json">{{ list | tojson }}</script>
+  {% endif %}
+{% endblock %}
+
+

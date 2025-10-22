@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block head_meta %}
+  <title>Пользовательское соглашение — {{ site.name }}</title>
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="/terms/" />
+{% endblock %}
+
+{% block content %}
+  <section class="page-hero">
+    <div class="container">
+      <h1 class="page-hero__title">Пользовательское соглашение</h1>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container">
+      <h2>1. Предмет</h2>
+      <p>Настоящее соглашение регулирует использование сайта {{ site.name }}.</p>
+      <h2>2. Права и обязанности</h2>
+      <ul>
+        <li>Пользователь обязуется предоставлять достоверные данные при оформлении заявки.</li>
+        <li>Оператор вправе связываться с пользователем для уточнения деталей заказа.</li>
+      </ul>
+      <h2>3. Ответственность</h2>
+      <p>Стороны несут ответственность в соответствии с законодательством РФ.</p>
+      <p>© {{ year }} {{ site.name }}</p>
+    </div>
+  </section>
+{% endblock %}

@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {% block head_meta %}
+    <title>{{ site.name }}</title>
+    {% endblock %}
+    {% block head_verifications %}{% endblock %}
+    {% block head_social %}
+    {% if og %}
+    <meta property="og:title" content="{{ og.title }}" />
+    {% if og.description %}<meta property="og:description" content="{{ og.description }}" />{% endif %}
+    <meta property="og:type" content="{{ og.type or 'website' }}" />
+    <meta property="og:image" content="{{ (og.image.startswith('http') and og.image) or (site.base_url ~ og.image) }}" />
+    <meta property="og:url" content="{{ (og.url.startswith('http') and og.url) or (site.base_url ~ og.url) }}" />
+    {% else %}
+    <meta property="og:title" content="{{ site.name }}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="{{ (site.og_image and (site.og_image.startswith('http') and site.og_image or (site.base_url ~ site.og_image))) or (site.base_url ~ '/assets/img/no-photo.png') }}" />
+    <meta property="og:url" content="{{ site.base_url ~ (canonical_url or '/') }}" />
+    {% endif %}
+    <meta property="og:locale" content="ru_RU" />
+    <meta name="twitter:card" content="summary_large_image" />
+    {% endblock %}
+    <!-- Yandex.Metrika counter (moved higher per recommendation) -->
+    <script type="text/javascript">
+      (function(m,e,t,r,i,k,a){
+          m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+          m[i].l=1*new Date();
+          for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+          k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+      })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=104174958', 'ym');
+
+      ym(104174958, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
+    </script>
+    <!-- /Yandex.Metrika counter -->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="preload" href="/assets/css/styles.css" as="style" />
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+    <link rel="stylesheet" href="/assets/css/catalog.css" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    {% block head_extra %}{% endblock %}
+  </head>
+  <body class="page">
+    <noscript><div><img src="https://mc.yandex.ru/watch/104174958" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    {% include 'partials/header.html' %}
+
+    <main class="main">
+      {% block content %}{% endblock %}
+    </main>
+
+    {% include 'partials/footer.html' %}
+
+    <!-- Global Quote Modal -->
+    {% include 'partials/quote_modal.html' %}
+
+    <script>
+      if (window.lucide && window.lucide.createIcons) {
+        try { window.lucide.createIcons(); } catch (e) {}
+      }
+
+      // Mobile Menu Toggle
+      document.addEventListener('DOMContentLoaded', function() {
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const body = document.body;
+
+        if (mobileMenuToggle && mobileMenu) {
+          mobileMenuToggle.addEventListener('click', function() {
+            const isOpen = mobileMenu.classList.contains('is-open');
+            
+            if (isOpen) {
+              // Close menu
+              mobileMenu.classList.remove('is-open');
+              mobileMenuToggle.classList.remove('is-active');
+              body.classList.remove('mobile-menu-open');
+            } else {
+              // Open menu
+              mobileMenu.classList.add('is-open');
+              mobileMenuToggle.classList.add('is-active');
+              body.classList.add('mobile-menu-open');
+            }
+          });
+
+          // Close menu when clicking on links
+          const mobileLinks = mobileMenu.querySelectorAll('.header__mobile-link');
+          mobileLinks.forEach(function(link) {
+            link.addEventListener('click', function() {
+              mobileMenu.classList.remove('is-open');
+              mobileMenuToggle.classList.remove('is-active');
+              body.classList.remove('mobile-menu-open');
+            });
+          });
+
+          // Close menu on escape key
+          document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && mobileMenu.classList.contains('is-open')) {
+              mobileMenu.classList.remove('is-open');
+              mobileMenuToggle.classList.remove('is-active');
+              body.classList.remove('mobile-menu-open');
+            }
+          });
+
+          // Close menu when clicking outside
+          document.addEventListener('click', function(e) {
+            if (mobileMenu.classList.contains('is-open') && 
+                !mobileMenu.contains(e.target) && 
+                !mobileMenuToggle.contains(e.target)) {
+              mobileMenu.classList.remove('is-open');
+              mobileMenuToggle.classList.remove('is-active');
+              body.classList.remove('mobile-menu-open');
+            }
+          });
+        }
+      });
+    </script>
+
+    {% block scripts %}{% endblock %}
+  </body>
+</html>
+
+

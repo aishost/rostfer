@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block head_meta %}
+  <title>Каталог — {{ site.name }}</title>
+  <meta name="description" content="Категории продукции компании РостФеррум" />
+  {% set _canonical = canonical_url or '/catalog/' %}
+  <link rel="canonical" href="{{ _canonical }}" />
+  {% set og = og or {
+    'title': 'Каталог — ' ~ site.name,
+    'description': 'Категории продукции компании РостФеррум',
+    'image': '/assets/img/no-photo.png',
+    'url': _canonical,
+    'type': 'website'
+  } %}
+  {% if pagination %}
+    {% if pagination.prev_url %}
+      <link rel="prev" href="{{ pagination.prev_url }}" />
+    {% endif %}
+    {% if pagination.next_url %}
+      <link rel="next" href="{{ pagination.next_url }}" />
+    {% endif %}
+  {% endif %}
+{% endblock %}
+
+{% block head_extra %}
+  {% if categories %}
+    {% set items = [] %}
+    {% for c in categories %}
+      {% set _ = items.append({
+        '@type': 'ListItem',
+        'position': loop.index,
+        'url': '/catalog/' ~ c.slug ~ '/',
+        'name': c.name,
+        'image': c.image_url or '/assets/img/no-photo.png'
+      }) %}
+    {% endfor %}
+    {% set list = {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      'name': 'Каталог',
+      'mainEntity': {
+        '@type': 'ItemList',
+        'itemListElement': items
+      }
+    } %}
+    <script type="application/ld+json">{{ list | tojson }}</script>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <section class="page-hero">
+    <div class="container">
+      <h1 class="page-hero__title">Каталог</h1>
+    </div>
+  </section>
+
+  <section class="breadcrumbs-section">
+    <div class="container">
+      {% include 'partials/breadcrumbs.html' with context %}
+    </div>
+  </section>
+
+  <section class="catalog">
+    <div class="container">
+      <div class="catalog__grid">
+        {% for c in categories %}
+          <article class="catalog__card">
+            <a class="catalog__card-link" href="/catalog/{{ c.slug }}/">
+              <div class="catalog__card-media">
+                <img class="catalog__card-img" src="{{ c.image_url or '/assets/img/no-photo.png' }}" alt="{{ c.name }}" loading="lazy" />
+              </div>
+              <div class="catalog__card-body">
+                <h3 class="catalog__card-title">{{ c.name }}</h3>
+                {% if c.intro_text and c.intro_text != c.name %}
+                  <p class="catalog__card-desc">{{ c.intro_text }}</p>
+                {% endif %}
+              </div>
+            </a>
+          </article>
+        {% endfor %}
+      </div>
+
+      {% if pagination %}
+        {% set base_url = '/catalog/' %}
+        {% include 'partials/pagination.html' %}
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}
+
+

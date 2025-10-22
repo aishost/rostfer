@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block head_meta %}
+    <title>О компании — {{ site.name }}</title>
+    <meta name="description" content="Информация о компании {{ company.short_name }}, реквизиты, контактные данные." />
+    <link rel="canonical" href="/about/" />
+{% endblock %}
+
+{% block head_extra %}
+  {% set org = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    'name': company.short_name or site.name,
+    'url': '/about/',
+    'logo': '/assets/logo.ico',
+    'contactPoint': [{
+      '@type': 'ContactPoint',
+      'telephone': site.phone,
+      'contactType': 'customer service',
+      'areaServed': 'RU',
+      'availableLanguage': ['ru']
+    }],
+    'address': {
+      '@type': 'PostalAddress',
+      'streetAddress': site.address,
+      'addressCountry': 'RU'
+    }
+  } %}
+  <script type="application/ld+json">{{ org | tojson }}</script>
+{% endblock %}
+
+{% block content %}
+      <section class="page-hero">
+        <div class="container">
+          <h1 class="page-hero__title">О компании</h1>
+          <p class="page-hero__subtitle">Надёжный поставщик металлопроката с многолетним опытом работы</p>
+        </div>
+      </section>
+
+      <section class="about-info">
+        <div class="container">
+          <div class="about-info__content">
+            <div class="about-info__text">
+              <h2>{{ company.short_name }}</h2>
+              <p>Наша компания специализируется на поставках металлопроката высокого качества. Мы работаем с ведущими металлургическими предприятиями России и предлагаем широкий ассортимент продукции с сертификатами соответствия ГОСТ.</p>
+              
+              <h3>Наши преимущества:</h3>
+              <ul>
+                <li>Вся продукция сертифицирована по ГОСТ</li>
+                <li>Отгрузка со склада в день заказа</li>
+                <li>Гибкие условия оплаты с отсрочкой до 30 дней</li>
+                <li>Быстрое оформление документов через ЭДО</li>
+                <li>Профессиональные консультации по выбору продукции</li>
+              </ul>
+
+              <p>Мы ценим долгосрочные партнёрские отношения и всегда готовы предложить индивидуальные условия сотрудничества.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="company-details">
+        <div class="container">
+          <h2 class="section__title">Реквизиты компании</h2>
+          
+          <div class="details-grid">
+            <div class="details-card">
+              <h3 class="details-card__title">Общие сведения</h3>
+              <div class="details-card__content">
+                <div class="detail-item">
+                  <span class="detail-label">Полное наименование:</span>
+                  <span class="detail-value">{{ company.full_name }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Сокращённое наименование:</span>
+                  <span class="detail-value">{{ company.short_name }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">ИНН:</span>
+                  <span class="detail-value">{{ company.inn }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">КПП:</span>
+                  <span class="detail-value">{{ company.kpp }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">ОГРН:</span>
+                  <span class="detail-value">{{ company.ogrn }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Руководитель:</span>
+                  <span class="detail-value">{{ company.director }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="details-card">
+              <h3 class="details-card__title">Адреса</h3>
+              <div class="details-card__content">
+                <div class="detail-item">
+                  <span class="detail-label">Юридический адрес:</span>
+                  <span class="detail-value">{{ company.legal_address }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Почтовый адрес:</span>
+                  <span class="detail-value">{{ company.postal_address }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="details-card">
+              <h3 class="details-card__title">Банковские реквизиты</h3>
+              <div class="details-card__content">
+                <div class="detail-item">
+                  <span class="detail-label">Банк:</span>
+                  <span class="detail-value">{{ company.bank }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">БИК:</span>
+                  <span class="detail-value">{{ company.bik }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Расчётный счёт:</span>
+                  <span class="detail-value">{{ company.account }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Корр. счёт:</span>
+                  <span class="detail-value">{{ company.cor_account }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="details-card">
+              <h3 class="details-card__title">Контактная информация</h3>
+              <div class="details-card__content">
+                <div class="detail-item">
+                  <span class="detail-label">Телефон:</span>
+                  <span class="detail-value">
+                    <a href="tel:{{ site.phone }}">{{ site.phone }}</a>
+                  </span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Email:</span>
+                  <span class="detail-value">
+                    <a href="mailto:{{ site.email }}">{{ site.email }}</a>
+                  </span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Режим работы:</span>
+                  <span class="detail-value">{{ site.hours }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="cta-section">
+        <div class="container">
+          <div class="cta-content">
+            <h2>Готовы начать сотрудничество?</h2>
+            <p>Оставьте заявку и получите персональное предложение</p>
+            <a class="btn btn_primary btn_large" href="/#lead-form">Запросить счёт</a>
+          </div>
+        </div>
+      </section>
+{% endblock %}

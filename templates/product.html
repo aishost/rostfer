@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block head_meta %}
+  {% set sku_name = product.h1 or product.name %}
+  {% set _canonical = canonical_url or ('/product/' ~ product.slug ~ '/') %}
+  {% set price_value = ('%.0f'|format(product.price)) if product.price else none %}
+  <title>{{ sku_name }} — цена, наличие, доставка по России | {{ site.name }}</title>
+  <meta name="description" content="{{ sku_name }} в наличии. Цена {{ ('от ' ~ price_value ~ ' ₽') if price_value else 'по запросу' }}. Доставка по России 24/7, возможна доставка в день заказа. Запросите счёт онлайн — {{ site.name }}." />
+  <link rel="canonical" href="{{ _canonical }}" />
+  <meta property="og:title" content="{{ sku_name }} — цена, доставка по России" />
+  <meta property="og:description" content="{{ sku_name }} в наличии. Возможна доставка в день заказа." />
+  <meta property="og:type" content="product" />
+  <meta property="og:image" content="{{ product.image_url or '/assets/img/no-photo.png' }}" />
+  <meta property="og:url" content="{{ _canonical }}" />
+{% endblock %}
+
+{% block head_extra %}
+  {% set sku_name = product.h1 or product.name %}
+  {% set _canonical = canonical_url or ('/product/' ~ product.slug ~ '/') %}
+  {% set price_value = ('%.0f'|format(product.price)) if product.price else none %}
+  {% set availability = 'https://schema.org/InStock' if product.in_stock else 'https://schema.org/OutOfStock' %}
+  {% set images = [product.image_url] if product.image_url else ['/assets/img/no-photo.png'] %}
+  {% if price_value %}
+    {% set jsonld = {
+      '@context': 'https://schema.org/',
+      '@type': 'Product',
+      'name': sku_name,
+      'sku': product.sku,
+      'image': images,
+      'description': product.short_desc or '',
+      'brand': {'@type': 'Brand', 'name': site.name},
+      'offers': {
+        '@type': 'Offer',
+        'priceCurrency': 'RUB',
+        'price': price_value,
+        'availability': availability,
+        'url': _canonical,
+        'itemCondition': 'https://schema.org/NewCondition'
+      }
+    } %}
+  {% else %}
+    {% set jsonld = {
+      '@context': 'https://schema.org/',
+      '@type': 'Product',
+      'name': sku_name,
+      'sku': product.sku,
+      'image': images,
+      'description': product.short_desc or '',
+      'brand': {'@type': 'Brand', 'name': site.name},
+      'offers': {
+        '@type': 'Offer',
+        'priceCurrency': 'RUB',
+        'availability': availability,
+        'url': _canonical,
+        'itemCondition': 'https://schema.org/NewCondition'
+      }
+    } %}
+  {% endif %}
+  <script type="application/ld+json">{{ jsonld | tojson }}</script>
+{% endblock %}
+
+{% block content %}
+  <section class="breadcrumbs-section">
+    <div class="container">
+      {% include 'partials/breadcrumbs.html' %}
+    </div>
+  </section>
+
+  <section class="product" itemscope itemtype="https://schema.org/Product">
+    <div class="container">
+      <div class="product__inner">
+        <div class="product__media">
+          <img class="product__img" src="{{ product.image_url or '/assets/img/no-photo.png' }}" alt="{{ product.name }} — фото" itemprop="image" />
+        </div>
+        <div class="product__info">
+          <h1 class="product__title" itemprop="name">{{ product.name }}</h1>
+          <div class="product__meta">
+            {% if product.price %}
+              <div class="product__price">От {{ '%.0f'|format(product.price) }} ₽</div>
+            {% else %}
+              <div class="product__price">Цена по запросу</div>
+            {% endif %}
+            <div class="product__stock {{ 'in' if product.in_stock else 'out' }}">{{ 'В наличии' if product.in_stock else 'Нет в наличии' }}</div>
+          </div>
+          {% set _canonical = canonical_url or ('/product/' ~ product.slug ~ '/') %}
+          <div class="visually-hidden" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+            <meta itemprop="priceCurrency" content="RUB" />
+            {% if product.price %}<meta itemprop="price" content="{{ '%.0f'|format(product.price) }}" />{% endif %}
+            <link itemprop="availability" href="https://schema.org/{{ 'InStock' if product.in_stock else 'OutOfStock' }}" />
+            <link itemprop="url" href="{{ _canonical }}" />
+          </div>
+          {% if product.short_desc %}
+            <p class="product__short">{{ product.short_desc }}</p>
+          {% endif %}
+          <button class="btn btn_primary" type="button" onclick="window.openQuoteModal && window.openQuoteModal('{{ product.name }}')">Запросить счёт</button>
+        </div>
+      </div>
+
+      {% if product.spec %}
+        <div class="product__spec">
+          <h2>Характеристики</h2>
+          <table class="spec-table">
+            <tbody>
+              {# dict-форма: перебор по ключам #}
+              {% if product.spec.items is defined %}
+                {% for key, value in product.spec.items() %}
+                  <tr><th>{{ key }}</th><td>{{ value }}</td></tr>
+                {% endfor %}
+              {% else %}
+                {# list-форма: ожидаем элементы с полями char/value или name/key + value/val #}
+                {% for it in product.spec %}
+                  <tr><th>{{ it.char or it.name or it.key }}</th><td>{{ it.value or it.val }}</td></tr>
+                {% endfor %}
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      {% endif %}
+
+      <div class="product__tabs tabs">
+        <div class="tabs__nav" role="tablist" aria-label="Информация о товаре">
+          <button class="tabs__btn is-active" role="tab" aria-selected="true" aria-controls="tab-desc" id="tab-desc-btn">Описание</button>
+          <button class="tabs__btn" role="tab" aria-selected="false" aria-controls="tab-delivery" id="tab-delivery-btn">Доставка</button>
+        </div>
+        <div class="tabs__panels">
+          <div class="tabs__panel is-active" id="tab-desc" role="tabpanel" aria-labelledby="tab-desc-btn">
+            <h2>Описание</h2>
+            <p>{{ product.name }} поставляем со склада и под заказ согласно ГОСТ/ТУ. Предоставляем комплект документов (сертификаты соответствия), при необходимости — резку/комплектацию под спецификацию и упаковку для ТК. Партия от 1 шт, поставка — со склада напрямую от производителя. {{ site.name }} фиксирует цену на согласованный срок и обеспечивает доставку 24/7, при наличии — в день заказа.</p>
+          </div>
+          <div class="tabs__panel" id="tab-delivery" role="tabpanel" aria-labelledby="tab-delivery-btn">
+            <h2>Доставка</h2>
+            <p>Мы доставляем по всей России 24/7 собственным транспортом и через транспортные компании (ПЭК, Деловые Линии, СДЭК и др.).<br>
+            — Возможна доставка в день заказа при наличии {{ product.name }} на складе.<br>
+            — Отправляем заказы в любой регион РФ.<br>
+            — Стоимость и сроки доставки рассчитываются при оформлении счёта.</p>
+          </div>
+        </div>
+      </div>
+
+      {% if related and related|length > 0 %}
+        <section class="related">
+          <h2>Похожие товары</h2>
+          {% set category_slug = product.category_slug or (category.slug if category else none) %}
+          <div class="carousel" id="relatedCarousel" data-carousel>
+            <button class="carousel__arrow carousel__arrow--prev" type="button" aria-label="Назад">‹</button>
+            <div class="carousel__viewport">
+              <div class="carousel__track">
+                {% for product in related %}
+                  {% include 'partials/product_card.html' %}
+                {% endfor %}
+                <article class="product-card product-card--show-all">
+                  <a class="product-card__link" href="{{ '/catalog/' ~ category_slug ~ '/' if category_slug else '/catalog/' }}">
+                    <div class="product-card__body">
+                      <h3 class="product-card__title">Показать все</h3>
+                      <span class="product-card__cta">Перейти →</span>
+                    </div>
+                  </a>
+                </article>
+              </div>
+            </div>
+            <button class="carousel__arrow carousel__arrow--next" type="button" aria-label="Вперёд">›</button>
+          </div>
+        </section>
+      {% endif %}
+    </div>
+  </section>
+
+
+  {% if jsonld %}
+    <script type="application/ld+json">{{ jsonld | tojson }}</script>
+  {% endif %}
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    (function(){
+      // Карусель
+      const carousel = document.getElementById('relatedCarousel');
+      if (carousel) {
+        const viewport = carousel.querySelector('.carousel__viewport');
+        const track = carousel.querySelector('.carousel__track');
+        const prev = carousel.querySelector('.carousel__arrow--prev');
+        const next = carousel.querySelector('.carousel__arrow--next');
+
+        function scrollBy(delta){
+          viewport.scrollBy({ left: delta, behavior: 'smooth' });
+        }
+
+        if (prev) prev.addEventListener('click', function(){ scrollBy(-Math.max(320, viewport.clientWidth * 0.9)); });
+        if (next) next.addEventListener('click', function(){ scrollBy(Math.max(320, viewport.clientWidth * 0.9)); });
+
+        // Убираем drag/scroll чтобы не блокировать клики - навигация только стрелками
+        // Можно добавить обычный scroll wheel
+        viewport.addEventListener('wheel', function(e) {
+          e.preventDefault();
+          viewport.scrollLeft += e.deltaY > 0 ? 200 : -200;
+        });
+      }
+
+      // Табы
+      const tabsNav = document.querySelector('.tabs__nav');
+      if (tabsNav) {
+        tabsNav.addEventListener('click', function(e) {
+          const btn = e.target.closest('.tabs__btn');
+          if (!btn) return;
+          
+          // Деактивируем все табы и панели
+          tabsNav.querySelectorAll('.tabs__btn').forEach(function(b) {
+            b.classList.remove('is-active');
+            b.setAttribute('aria-selected', 'false');
+          });
+          document.querySelectorAll('.tabs__panel').forEach(function(p) {
+            p.classList.remove('is-active');
+          });
+          
+          // Активируем выбранный таб и панель
+          btn.classList.add('is-active');
+          btn.setAttribute('aria-selected', 'true');
+          const targetPanel = document.getElementById(btn.getAttribute('aria-controls'));
+          if (targetPanel) targetPanel.classList.add('is-active');
+        });
+      }
+    })();
+  </script>
+{% endblock %}
+
+

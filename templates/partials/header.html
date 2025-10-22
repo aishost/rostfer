@@ -1,0 +1,42 @@
+<header class="header">
+  <div class="container">
+    <div class="header__inner">
+      <div class="header__logo">
+        <a href="/"><strong>{{ site.name }}</strong></a>
+      </div>
+      <nav class="header__nav">
+        <a class="header__link" href="/catalog/">Каталог</a>
+        <a class="header__link" href="/about/">О компании</a>
+        <a class="header__link" href="/#contacts">Контакты</a>
+      </nav>
+      <div class="header__contact">
+        <a class="header__phone" href="tel:{{ site.phone }}">{{ site.phone }}</a>
+        <div class="header__hours">{{ site.hours }}</div>
+      </div>
+      <div class="header__cta">
+        <button class="btn btn_primary" type="button" onclick="window.openQuoteModal && window.openQuoteModal()">Запросить счёт</button>
+      </div>
+      <button class="header__burger" aria-label="Меню" id="mobile-menu-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    
+    <!-- Mobile Menu -->
+    <div class="header__mobile-menu" id="mobile-menu">
+      <div class="header__mobile-nav">
+        <a class="header__mobile-link" href="/catalog/">Каталог</a>
+        <a class="header__mobile-link" href="/about/">О компании</a>
+        <a class="header__mobile-link" href="/#contacts">Контакты</a>
+      </div>
+      <div class="header__mobile-contact">
+        <a class="header__mobile-phone" href="tel:{{ site.phone }}">{{ site.phone }}</a>
+        <div class="header__mobile-hours">{{ site.hours }}</div>
+        <button class="btn btn_primary btn_full" type="button" onclick="window.openQuoteModal && window.openQuoteModal()">Запросить счёт</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+

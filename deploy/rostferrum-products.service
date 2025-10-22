@@ -1,0 +1,23 @@
+[Unit]
+Description=RostFerrum FastAPI App (API + Products)
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/rostferrum
+Environment=PATH=/var/www/rostferrum/venv/bin
+Environment=DATABASE_URL=postgresql://rostferrum_user:password@localhost/rostferrum
+ExecStart=/var/www/rostferrum/venv/bin/uvicorn scripts.api:app --host 127.0.0.1 --port 8000 --workers 4
+Restart=always
+RestartSec=5
+
+# Безопасность
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/www/rostferrum/data
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

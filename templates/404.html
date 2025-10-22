@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block head_meta %}
+  <title>Страница не найдена — {{ site.name }}</title>
+  <meta name="robots" content="noindex, nofollow" />
+{% endblock %}
+
+{% block content %}
+  <section class="page-hero">
+    <div class="container">
+      <h1 class="page-hero__title">404 — Страница не найдена</h1>
+      <p class="page-hero__subtitle">Проверьте адрес или вернитесь на главную</p>
+      <p><a class="btn btn_primary" href="/">На главную</a></p>
+    </div>
+  </section>
+{% endblock %}

@@ -1,0 +1,398 @@
+{% extends "base.html" %}
+
+{% block head_meta %}
+    <title>РостФеррум — металлопрокат с сертификатами и поставкой со склада</title>
+    <meta name="description" content="Счёт в течение 1 часа, отсрочка до 30 дней, работа через ЭДО. Вся продукция сертифицирована по ГОСТ." />
+    <link rel="canonical" href="/" />
+{% endblock %}
+
+{% block head_extra %}
+  {% set org = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    'name': site.name,
+    'url': '/',
+    'logo': '/assets/logo.ico',
+    'contactPoint': [{
+      '@type': 'ContactPoint',
+      'telephone': site.phone,
+      'contactType': 'customer service',
+      'areaServed': 'RU',
+      'availableLanguage': ['ru']
+    }],
+    'address': {
+      '@type': 'PostalAddress',
+      'streetAddress': site.address,
+      'addressCountry': 'RU'
+    }
+  } %}
+  {% set website = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    'name': site.name,
+    'url': '/',
+    'inLanguage': 'ru-RU'
+  } %}
+  <script type="application/ld+json">{{ org | tojson }}</script>
+  <script type="application/ld+json">{{ website | tojson }}</script>
+{% endblock %}
+
+{% block content %}
+      <!-- Hero-блок (первый экран) -->
+      <section class="hero">
+        <div class="hero__bg">
+          <div class="hero__overlay"></div>
+        </div>
+        <div class="container">
+          <div class="hero__content">
+            <h1 class="hero__title">{{ hero.title }}</h1>
+            <p class="hero__subtitle">{{ hero.subtitle }}</p>
+            <div class="hero__bullets">
+              {% for b in hero.bullets %}
+                <div class="hero__bullet">
+                  <div class="hero__bullet-icon">
+                    <i data-lucide="{{ b.icon }}"></i>
+                  </div>
+                  <span class="hero__bullet-text">{{ b.text }}</span>
+                </div>
+              {% endfor %}
+            </div>
+            <div class="hero__actions">
+              <a class="btn btn_primary btn_large" href="#lead-form">Запросить счёт</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Категории/продукция (превью каталога) -->
+      <section id="catalog" class="catalog">
+        <div class="container">
+          <div class="section__head">
+            <h2 class="section__title">Что поставляем</h2>
+          </div>
+          <div class="catalog__grid">
+            {% for c in categories %}
+              <article class="catalog__card">
+                <a class="catalog__card-link" href="{% if c.slug %}/catalog/{{ c.slug }}/{% else %}/catalog/{% endif %}">
+                  <div class="catalog__card-media">
+                    <img class="catalog__card-img" src="{{ c.image_url or c.image }}" alt="{{ c.name }}" loading="lazy" />
+                  </div>
+                  <div class="catalog__card-body">
+                    <h3 class="catalog__card-title">{{ c.name }}</h3>
+                    {% if c.desc or c.intro_text %}
+                      <p class="catalog__card-desc">{{ c.desc or c.intro_text }}</p>
+                    {% endif %}
+                    <span class="catalog__card-cta">Перейти <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="m6 4 4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  </div>
+                </a>
+              </article>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <!-- Преимущества (раскрытые УТП) -->
+      <section class="advantages">
+        <div class="container">
+          <div class="section__head">
+            <h2 class="section__title">Наши преимущества</h2>
+          </div>
+          <div class="advantages__grid">
+            {% for a in advantages %}
+              <div class="advantages__card">
+                <div class="advantages__card-icon">
+                  <i data-lucide="{{ a.icon }}"></i>
+                </div>
+                <h3 class="advantages__card-title">{{ a.title }}</h3>
+                <p class="advantages__card-text">{{ a.text }}</p>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <!-- Как мы работаем (процесс) -->
+      <section class="process">
+        <div class="container">
+          <div class="section__head">
+            <h2 class="section__title">Как мы работаем</h2>
+          </div>
+          <div class="process__steps">
+            {% for s in process %}
+              <div class="process__step">
+                <div class="process__step-num">{{ s.step }}</div>
+                <h3 class="process__step-title">{{ s.title }}</h3>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA-блок «Запросить счёт» -->
+      <section id="lead-form" class="lead-form">
+        <div class="container">
+          <div class="lead-form__content">
+            <div class="lead-form__info">
+              <h2 class="lead-form__title">Получите счёт за 1 час</h2>
+              <p class="lead-form__subtitle">Оставьте заявку и наш менеджер свяжется с вами в течение часа</p>
+            </div>
+            <form id="leadForm" class="lead-form__form" method="post" action="/api/lead" enctype="multipart/form-data">
+              <div class="form-group">
+                <input class="form-input" type="text" name="name" placeholder="Ваше имя" />
+              </div>
+              <div class="form-group">
+                <input class="form-input" type="tel" name="phone" placeholder="Телефон*" required />
+              </div>
+              <div class="form-group">
+                <input class="form-input" type="email" name="email" placeholder="Email" />
+              </div>
+              <div class="form-group">
+                <textarea class="form-textarea" name="message" placeholder="Комментарий" rows="3"></textarea>
+              </div>
+              <div class="form-group">
+                <label class="file-upload">
+                  <input class="file-upload__input" type="file" name="document" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" />
+                  <span class="file-upload__label">
+                    <i data-lucide="paperclip" class="file-upload__icon" width="20" height="20" aria-hidden="true"></i>
+                    <span class="file-upload__text">Прикрепить документ</span>
+                  </span>
+                </label>
+              </div>
+              <input type="text" name="hp_field" class="form-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+              <button class="btn btn_primary btn_full" type="submit">Отправить заявку</button>
+              <p id="formMsg" class="form-msg" role="status" aria-live="polite"></p>
+              <p class="form-note">Нажимая на кнопку, вы соглашаетесь на <a href="/privacy/">обработку персональных данных</a></p>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section id="faq" class="faq">
+        <div class="container">
+          <div class="section__head">
+            <h2 class="section__title">Часто задаваемые вопросы</h2>
+          </div>
+          <div class="faq__list">
+            {% for item in faq %}
+              <details class="faq__item">
+                <summary class="faq__question">{{ item.q }}</summary>
+                <div class="faq__answer">{{ item.a }}</div>
+              </details>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <!-- Контактный блок -->
+      <section id="contacts" class="contacts">
+        <div class="container">
+          <div class="section__head">
+            <h2 class="section__title">Свяжитесь с нами</h2>
+          </div>
+          <div class="contacts__content">
+            <div class="contacts__info">
+              <div class="contacts__item">
+                <h3 class="contacts__item-title">Телефон</h3>
+                <a class="contacts__item-value" href="tel:{{ site.phone }}">{{ site.phone }}</a>
+              </div>
+              <div class="contacts__item">
+                <h3 class="contacts__item-title">Email</h3>
+                <a class="contacts__item-value" href="mailto:{{ site.email }}">{{ site.email }}</a>
+              </div>
+              <div class="contacts__item">
+                <h3 class="contacts__item-title">Адрес</h3>
+                <div class="contacts__item-value">{{ site.address }}</div>
+              </div>
+              <div class="contacts__item">
+                <h3 class="contacts__item-title">Режим работы</h3>
+                <div class="contacts__item-value">{{ site.hours }}</div>
+              </div>
+            </div>
+            <div class="contacts__cta">
+              <a class="btn btn_primary btn_large" href="#lead-form">Оставить заявку</a>
+            </div>
+          </div>
+        </div>
+      </section>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+      // Генерация уникального ID сессии
+      function generateSessionId() {
+        const sessionId = sessionStorage.getItem('rf_session_id');
+        if (sessionId) {
+          return sessionId;
+        }
+        
+        const newSessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        sessionStorage.setItem('rf_session_id', newSessionId);
+        return newSessionId;
+      }
+      
+      // Отправка события на сервер
+      async function trackEvent(eventType, additionalData = {}) {
+        try {
+          // Разрешаем только события входа
+          const allowed = new Set(['page_view', 'enter']);
+          if (!allowed.has((eventType || '').toLowerCase())) {
+            return;
+          }
+
+          const socialData = getSocialData();
+          const formData = new FormData();
+          
+          formData.append('event_type', eventType);
+          formData.append('page_url', window.location.href);
+          formData.append('referrer', document.referrer || '');
+          formData.append('session_id', generateSessionId());
+          
+          if (socialData.source) {
+            formData.append('social_source', socialData.source);
+            formData.append('social_id', socialData.id || '');
+            formData.append('social_data', JSON.stringify(socialData.data || {}));
+          }
+          
+          // Добавляем дополнительные данные
+          for (const [key, value] of Object.entries(additionalData)) {
+            formData.append(key, value);
+          }
+          
+          await fetch('/api/event', {
+            method: 'POST',
+            body: formData
+          });
+        } catch (error) {
+          console.log('Event tracking error:', error);
+        }
+      }
+      
+      // Автоматическое отслеживание загрузки страницы
+      trackEvent('page_view');
+      
+      // Функция для получения данных из соцсетей
+      function getSocialData() {
+        const socialData = { source: null, id: null, data: {} };
+        
+        try {
+          // ВКонтакте
+          if (window.VK && window.VK.Api) {
+            socialData.source = 'vk';
+            // Получаем данные пользователя ВК если он авторизован
+            VK.Api.call('users.get', {}, function(data) {
+              if (data.response && data.response[0]) {
+                socialData.id = data.response[0].id.toString();
+                socialData.data = {
+                  first_name: data.response[0].first_name,
+                  last_name: data.response[0].last_name
+                };
+              }
+            });
+          }
+          
+          // Одноклассники
+          else if (window.ODKL && window.ODKL.restApi) {
+            socialData.source = 'ok';
+            // Получаем данные пользователя ОК если он авторизован
+            ODKL.restApi.call('users.getCurrentUser', {}, function(status, data) {
+              if (status === 'ok' && data) {
+                socialData.id = data.uid;
+                socialData.data = {
+                  first_name: data.first_name,
+                  last_name: data.last_name
+                };
+              }
+            });
+          }
+          
+          // Facebook
+          else if (window.FB && window.FB.getLoginStatus) {
+            FB.getLoginStatus(function(response) {
+              if (response.status === 'connected') {
+                socialData.source = 'facebook';
+                socialData.id = response.authResponse.userID;
+                
+                FB.api('/me', {fields: 'name,email'}, function(response) {
+                  if (response && !response.error) {
+                    socialData.data = {
+                      name: response.name,
+                      email: response.email
+                    };
+                  }
+                });
+              }
+            });
+          }
+          
+          // Telegram Web App
+          else if (window.Telegram && window.Telegram.WebApp) {
+            const tg = window.Telegram.WebApp;
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+              socialData.source = 'telegram';
+              socialData.id = tg.initDataUnsafe.user.id.toString();
+              socialData.data = {
+                first_name: tg.initDataUnsafe.user.first_name,
+                last_name: tg.initDataUnsafe.user.last_name,
+                username: tg.initDataUnsafe.user.username
+              };
+            }
+          }
+          
+        } catch (e) {
+          console.log('Social data collection error:', e);
+        }
+        
+        return socialData;
+      }
+      
+      // Обработчик формы
+      const form = document.getElementById('leadForm');
+      const msg = document.getElementById('formMsg');
+      if (form) {
+        // Обновление текста лейбла при выборе файла
+        const fileInput = form.querySelector('input[name="document"]');
+        const fileText = form.querySelector('.file-upload__text');
+        const defaultFileText = fileText ? fileText.textContent : 'Прикрепить документ';
+        if (fileInput && fileText) {
+          fileInput.addEventListener('change', () => {
+            if (fileInput.files && fileInput.files.length > 0) {
+              fileText.textContent = fileInput.files[0].name;
+            } else {
+              fileText.textContent = defaultFileText;
+            }
+          });
+        }
+
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          msg.textContent = 'Отправляем...';
+          const formData = new FormData(form);
+          
+          // Добавляем данные из соцсетей если доступны
+          const socialData = getSocialData();
+          if (socialData.source) {
+            formData.append('social_source', socialData.source);
+            formData.append('social_id', socialData.id || '');
+            formData.append('social_data', JSON.stringify(socialData.data || {}));
+          }
+          
+          try {
+            const resp = await fetch(form.action, { method: 'POST', body: formData });
+            const data = await resp.json().catch(() => ({}));
+            if (resp.ok) {
+              msg.textContent = data.message || 'Заявка отправлена';
+              form.reset();
+              if (fileText) fileText.textContent = defaultFileText;
+            } else {
+              msg.textContent = data.message || 'Ошибка отправки';
+            }
+          } catch (err) {
+            msg.textContent = 'Сеть недоступна';
+          }
+        });
+      }
+    </script>
+{% endblock %}
+
+
